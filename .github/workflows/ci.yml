@@ -1,0 +1,35 @@
+name: ci
+on:
+  pull_request: {}
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      matrix:
+        go: ['1.26.11', '1.27.4']
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@d8cbb8045d7f43706b9177cceb36c1f91a6644d5 # v7.1.0
+        with:
+          go-version: ${{ matrix.go }}
+      - run: go mod download && go mod verify
+      - run: go generate ./... && git diff --exit-code
+      - run: go vet ./...
+      - run: go test -count=1 -race ./...
+      - run: go run golang.org/x/vuln/cmd/govulncheck@v1.10.0 ./...
+      - name: stream module
+        working-directory: stream
+        run: |
+          go mod download && go mod verify
+          go vet ./...
+          go test -count=1 -race ./...
+      - name: stream types match the pinned upstream protos
+        working-directory: stream/internal/protogen
+        run: go run . ../../geyserpb && git diff --exit-code

@@ -1,0 +1,19 @@
+carbium-go/stream
+
+Package geyserpb is generated from the Yellowstone gRPC protos of rpcpool/yellowstone-grpc, release
+v17.0.2+solana.4.4.1, commit 3c66a659b947e6df09136fc7570bf9918588e2fb, files yellowstone-grpc-proto/proto/geyser.proto
+(sha256 80ee337f361198a0722cb5bdf244fe41838949ab7a3af6d1b182b7fdca9abf02) and
+yellowstone-grpc-proto/proto/solana-storage.proto (sha256
+e5d16ba9a9e83f6ed8c92a96b6b75dfd64c43f897b976011eb3ec5abe2f3c818). Upstream licenses that folder under the Apache
+License 2.0 (its LICENSING.md); the licence text is in geyserpb/LICENSE.
+
+Changes made when generating (stream/internal/protogen; no proto file is kept in this repository):
+- The Geyser calls SubscribeDeshred and SubscribeGossip are removed, with the messages and enums only they reach.
+  Carbium does not serve them.
+- The proto packages geyser and solana.storage.ConfirmedBlock become carbium.geyser and
+  carbium.solana.storage.ConfirmedBlock, and the files carbium/geyser.proto and carbium/solana-storage.proto, so the
+  descriptors never clash with another copy linked into the same program.
+None of this changes the wire: every message keeps its field numbers and types, and the client calls
+/geyser.Geyser/<Method> by its upstream name.
+
+The rest of this module is MIT, see LICENSE.
