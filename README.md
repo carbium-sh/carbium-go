@@ -1,9 +1,9 @@
 # carbium-go
 
 Typed Go client for Carbium's Solana services on [services.carbium.sh](https://carbium.sh): JSON-RPC (every served
-method, DAS included), the quote plane and its REST quote, WebSocket subscriptions, the account API, webhook signature
-checks, the DCA API on the dex, the token API, and Carbon Stream in its own module. Standard library only, plus one
-WebSocket package. Go 1.26 or later.
+method, DAS included), the quote plane, WebSocket subscriptions, the account API, webhook signature checks, the DCA API
+on the dex, the token API, and Carbon Stream in its own module. Standard library only, plus one WebSocket package. Go
+1.26 or later.
 
 The module never holds a private key, signs or sends on its own: swap and DCA calls return one unsigned transaction
 for your own wallet to sign, and `SendTransaction` takes bytes you signed. Every method the module offers is served;
@@ -12,6 +12,9 @@ what the services do not serve is not here.
 ```sh
 go get github.com/carbium-sh/carbium-go
 ```
+
+To update: `go get github.com/carbium-sh/carbium-go@latest`; each version's notes are at
+https://github.com/carbium-sh/carbium-go/releases.
 
 ## Quick start
 
@@ -95,11 +98,21 @@ Then poll `GetSignatureStatuses` and resend the same bytes until the block heigh
 `swap.LastValidBlockHeight`. The module never retries `SendTransaction`. Quote again (never re-sign the old message)
 when the blockhash expires or when `Swap` answers a route error that asks for a new quote.
 
-The REST form of the quote is `Cq1Quote`, on the same key, scope and rate as `Quote`:
+A quote also takes a cap on the accounts the swap instruction may carry and your own integrator fee:
 
 ```go
-rq, err := c.Cq1Quote(ctx, carbium.Cq1QuoteParams{SrcMint: sol, DstMint: usdc, AmountIn: 100000000, SlippageBps: 50})
+capped, err := c.Quote(ctx, carbium.QuoteParams{SrcMint: sol, DstMint: usdc, AmountIn: "100000000", SlippageBps: 50,
+	MaxAccounts: carbium.Ptr[uint64](32), IntegratorFeeBps: "25", IntegratorFeeAccount: treasury})
+// capped.IntegratorFee is {Amount, FeeBps, Mint, Account}; DestAmountOut and MinAmountOut are what the trader
+// receives after it.
 ```
+
+The fee is taken in the token `IntegratorFee.Mint` names. A token fee goes to that wallet's associated token account,
+which must already exist; a fee that cannot be paid is skipped and the swap still lands. A quote with no route under
+`MaxAccounts` answers `-32055` (kind `route`): change the ask, a retry gives the same answer.
+
+`GET /cq1/quote` is the old quote path, kept for callers already on it (`Cq1Quote`, deprecated); new code uses
+`Quote`.
 
 ## Errors and retries
 

@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net"
 	"net/http"
+	"reflect"
 	"strings"
 	"testing"
 	"time"
@@ -603,5 +604,54 @@ func TestHintsNeverHangOrOverflow(t *testing.T) {
 		if len(p.seen()) != 1 || len(w.list()) != 0 || e.RetryAfter != maxServerHint || !e.Retryable {
 			t.Errorf("%v: %d requests, waits %v, hint %v: a hint too long to wait goes back to the caller, clamped", h, len(p.seen()), w.list(), e.RetryAfter)
 		}
+	}
+}
+
+var capQuote = QuoteParams{SrcMint: "So11111111111111111111111111111111111111112", DstMint: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v", AmountIn: "1", SlippageBps: 50, SwapTag: Ptr[uint64](1)}
+
+func TestAQuoteWithNoRouteUnderTheAccountCapIsARouteErrorSentOnce(t *testing.T) {
+	p := plant(t, reply{body: rpcErr(-32055, "no route fits the account cap", "", map[string]any{"why": "accounts_over_cap"})})
+	c, w := testClient(t, p, nil)
+	_, err := c.Quote(context.Background(), capQuote)
+	e := asError(t, err)
+	if e.Kind != KindRoute || e.Code != -32055 || e.HTTPStatus != 200 || e.Retryable || len(p.seen()) != 1 || len(w.list()) != 0 {
+		t.Fatalf("%d requests, waits %v, %+v", len(p.seen()), w.list(), e)
+	}
+}
+
+func TestAQuoteSendsTheAccountCapAndTheIntegratorFeeByTheirLongNamesAndTypesTheFee(t *testing.T) {
+	const sol, usdc, wallet = "So11111111111111111111111111111111111111112", "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v", "11111111111111111111111111111111"
+	quote := ok(`{"srcAmountIn":"100000000","destAmountOut":"14250000","minAmountOut":"14178750","slippageBps":50,"swapMode":"ExactIn","inputMint":"` + sol +
+		`","outputMint":"` + usdc + `","routePlan":[],"quoteId":"q","integratorFee":{"amount":"35625","feeBps":25,"mint":"` + usdc + `","account":"` + wallet + `"}}`)
+	p := plant(t, reply{body: quote})
+	c, _ := testClient(t, p, nil)
+	plain := QuoteParams{SrcMint: sol, DstMint: usdc, AmountIn: "100000000", SlippageBps: 50}
+	ask := plain
+	ask.MaxAccounts, ask.IntegratorFeeBps, ask.IntegratorFeeAccount = Ptr[uint64](8), "25", wallet
+	q, err := c.Quote(context.Background(), ask)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := c.Quote(context.Background(), plain); err != nil {
+		t.Fatal(err)
+	}
+	var sent []map[string]any
+	for _, r := range p.seen() {
+		var one struct{ Params map[string]any }
+		if err := json.Unmarshal(r.body, &one); err != nil {
+			t.Fatal(err)
+		}
+		sent = append(sent, one.Params)
+	}
+	base := map[string]any{"src_mint": sol, "dst_mint": usdc, "amount_in": "100000000", "slippage_bps": float64(50)}
+	asked := map[string]any{"maxAccounts": float64(8), "integrator_fee_bps": "25", "integrator_fee_account": wallet}
+	for k, v := range base {
+		asked[k] = v
+	}
+	if !reflect.DeepEqual(sent, []map[string]any{asked, base}) {
+		t.Fatalf("sent %v", sent)
+	}
+	if f := q.IntegratorFee; f == nil || *f != (QuoteIntegratorFee{Amount: "35625", FeeBps: 25, Mint: usdc, Account: wallet}) {
+		t.Fatalf("integratorFee %+v", f)
 	}
 }

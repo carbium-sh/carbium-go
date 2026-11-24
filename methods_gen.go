@@ -847,23 +847,32 @@ type QuotePlatformFee struct {
 	Mint   string `json:"mint"`
 }
 
+// QuoteIntegratorFee is sent or received as the spec's Quote.integratorFee.
+type QuoteIntegratorFee struct {
+	Amount  string `json:"amount"`
+	FeeBps  uint64 `json:"feeBps"`
+	Mint    string `json:"mint"`
+	Account string `json:"account"`
+}
+
 // Quote is sent or received as the spec's Quote.
 // The service may add keys; ones not listed here are dropped.
 type Quote struct {
-	SrcAmountIn       string            `json:"srcAmountIn"`
-	DestAmountOut     string            `json:"destAmountOut"`
-	MinAmountOut      string            `json:"minAmountOut"`
-	SlippageBps       uint64            `json:"slippageBps"`
-	SwapMode          string            `json:"swapMode"`
-	InputMint         string            `json:"inputMint"`
-	OutputMint        string            `json:"outputMint"`
-	RoutePlan         []RouteLeg        `json:"routePlan"`
-	QuoteID           string            `json:"quoteId"`
-	PlatformFee       *QuotePlatformFee `json:"platformFee,omitempty"`
-	TxVersion         *uint64           `json:"txVersion,omitempty"`
-	SwapTag           *uint64           `json:"swapTag,omitempty"`
-	Partial           *bool             `json:"partial,omitempty"`
-	RequestedAmountIn string            `json:"requestedAmountIn,omitempty"`
+	SrcAmountIn       string              `json:"srcAmountIn"`
+	DestAmountOut     string              `json:"destAmountOut"`
+	MinAmountOut      string              `json:"minAmountOut"`
+	SlippageBps       uint64              `json:"slippageBps"`
+	SwapMode          string              `json:"swapMode"`
+	InputMint         string              `json:"inputMint"`
+	OutputMint        string              `json:"outputMint"`
+	RoutePlan         []RouteLeg          `json:"routePlan"`
+	QuoteID           string              `json:"quoteId"`
+	PlatformFee       *QuotePlatformFee   `json:"platformFee,omitempty"`
+	IntegratorFee     *QuoteIntegratorFee `json:"integratorFee,omitempty"`
+	TxVersion         *uint64             `json:"txVersion,omitempty"`
+	SwapTag           *uint64             `json:"swapTag,omitempty"`
+	Partial           *bool               `json:"partial,omitempty"`
+	RequestedAmountIn string              `json:"requestedAmountIn,omitempty"`
 }
 
 // QuoteHealth is sent or received as the spec's QuoteHealth.
@@ -884,14 +893,17 @@ type QuoteHealth struct {
 
 // QuoteParams is sent or received as the spec's QuoteParams.
 type QuoteParams struct {
-	SrcMint     string   `json:"src_mint"`
-	DstMint     string   `json:"dst_mint"`
-	AmountIn    Decimal  `json:"amount_in"`
-	SlippageBps uint64   `json:"slippage_bps"`
-	Dex         []string `json:"dex,omitempty"`
-	Dexes       []string `json:"dexes,omitempty"`
-	TxVersion   *uint64  `json:"txVersion,omitempty"`
-	SwapTag     *uint64  `json:"swapTag,omitempty"`
+	SrcMint              string   `json:"src_mint"`
+	DstMint              string   `json:"dst_mint"`
+	AmountIn             Decimal  `json:"amount_in"`
+	SlippageBps          uint64   `json:"slippage_bps"`
+	Dex                  []string `json:"dex,omitempty"`
+	Dexes                []string `json:"dexes,omitempty"`
+	TxVersion            *uint64  `json:"txVersion,omitempty"`
+	SwapTag              *uint64  `json:"swapTag,omitempty"`
+	MaxAccounts          *uint64  `json:"maxAccounts,omitempty"`
+	IntegratorFeeBps     Decimal  `json:"integrator_fee_bps,omitempty"`
+	IntegratorFeeAccount string   `json:"integrator_fee_account,omitempty"`
 }
 
 // SearchAssetsParams is sent or received as the spec's SearchAssetsParams.

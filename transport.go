@@ -55,7 +55,7 @@ func kindOf(status int, code int, hasCode bool, reason string) ErrorKind {
 		return KindRequest
 	case status != 200:
 		return KindUpstream
-	case hasCode && ((code <= -32051 && code >= -32054) || (code <= -32060 && code >= -32099)):
+	case hasCode && code <= -32051 && code >= -32099:
 		return KindRoute
 	case (hasCode && requestCodes[code]) || requestReasons[reason]:
 		return KindRequest

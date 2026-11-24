@@ -77,9 +77,11 @@ type Cq1SwapInfo struct {
 	FeeMint    string `json:"feeMint"`
 }
 
-// Cq1Quote calls GET /cq1/quote, the REST form of the quote. It is admitted as the quote method (same scope, plan
-// and rate) and follows the same retry rules. A parameter fault comes back as kind request with the service's
-// text as the message; a pair with no route (HTTP 422) is kind route. Neither is retried.
+// Cq1Quote calls GET /cq1/quote, the old quote path, kept for callers already on it. It is admitted as the quote
+// method (same scope, plan and rate) and follows the same retry rules. A parameter fault comes back as kind request
+// with the service's text as the message; a pair with no route (HTTP 422) is kind route. Neither is retried.
+//
+// Deprecated: GET /cq1/quote is the old quote path; new code uses [Client.Quote].
 func (cl *Client) Cq1Quote(ctx context.Context, params Cq1QuoteParams) (*Cq1Quote, error) {
 	const route = "GET /cq1/quote"
 	if err := cl.check(route); err != nil {

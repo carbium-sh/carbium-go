@@ -29,7 +29,7 @@ import (
 var (
 	ctx                                                                   context.Context
 	c                                                                     *carbium.Client
-	a, b, mint, owner, sol, usdc, wallet, pubkey, programID, signedBase64 string
+	a, b, mint, owner, sol, usdc, wallet, treasury, pubkey, programID, signedBase64 string
 	mints                                                                 []string
 	rawBody                                                               []byte
 	r                                                                     *http.Request

@@ -15,7 +15,7 @@ import (
 )
 
 // Version is this module's version, sent in the solana-client header.
-const Version = "0.1.0"
+const Version = "0.1.1"
 
 // DefaultEndpoint is where the client sends calls unless Options.Endpoint says otherwise.
 const DefaultEndpoint = "https://services.carbium.sh"
