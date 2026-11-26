@@ -119,7 +119,8 @@ func contains(list []string, s string) bool {
 }
 
 // NewClient makes a Client for a service key (c_serv_…, shown once on the dashboard). An empty key makes a keyless
-// client, which the service answers with 401. An account key (c_acct_…) is refused: it is for package account.
+// client: the service answers its twelve public methods, 30 calls a minute per IP address, and refuses every other
+// call with 401. An account key (c_acct_…) is refused: it is for package account.
 func NewClient(apiKey string, opts *Options) (*Client, error) {
 	if opts == nil {
 		opts = &Options{}

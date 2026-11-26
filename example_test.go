@@ -9,8 +9,8 @@ import (
 	carbium "github.com/carbium-sh/carbium-go"
 )
 
-// The README's quick start, as pkg.go.dev shows it. It needs a key and the network, so it has no Output line and is
-// never run by go test; TestEveryGoBlockInTheReadmeVets compiles the README's own copy.
+// The README's quick start, as pkg.go.dev shows it. It calls the service over the network, so it has no Output line
+// and is never run by go test; TestEveryGoBlockInTheReadmeVets compiles the README's own copy.
 func Example() {
 	c, err := carbium.NewClient(os.Getenv("CARBIUM_KEY"), nil)
 	if err != nil {

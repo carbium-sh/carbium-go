@@ -18,8 +18,10 @@ https://github.com/carbium-sh/carbium-go/releases.
 
 ## Quick start
 
-A service key (`c_serv_…`) comes from the dashboard at carbium.sh. Keep it in `CARBIUM_KEY`. Without one the call
-reaches the service and is refused with 401, which the quick start prints.
+A service key (`c_serv_…`) comes from the dashboard at carbium.sh. Keep it in `CARBIUM_KEY`. Without one,
+services.carbium.sh answers twelve methods at 30 calls a minute per IP address: `Quote`, `Swap`, `Prices`, `Health`
+and the reads `GetHealth`, `GetVersion`, `GetSlot`, `GetBlockHeight`, `GetEpochInfo`, `GetLatestBlockhash`,
+`IsBlockhashValid` and `GetGenesisHash`. Every other call is refused with 401, which the quick start prints.
 
 ```go
 package main
@@ -84,7 +86,8 @@ one in a loop.
 
 ### Swap: quote, build, sign with your own wallet, send
 
-The quote plane needs the account's quote module (free plan) and a key with the quote scope.
+With a key, the quote plane needs the account's quote module (free plan) and the quote scope on the key. With no key
+it answers at the limit above.
 
 ```go
 q, err := c.Quote(ctx, carbium.QuoteParams{SrcMint: sol, DstMint: usdc, AmountIn: "100000000", SlippageBps: 50})
